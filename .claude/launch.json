@@ -1,0 +1,23 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "finguard-ml",
+      "runtimeExecutable": "ml-service/.venv/bin/python",
+      "runtimeArgs": ["-m", "uvicorn", "app:app", "--app-dir", "ml-service", "--host", "127.0.0.1", "--port", "8001"],
+      "port": 8001
+    },
+    {
+      "name": "finguard-switch",
+      "runtimeExecutable": "/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home/bin/java",
+      "runtimeArgs": ["-DLOAD_POOL_SIZE=120", "-jar", "switch-service/target/finguard-switch-1.0.0.jar"],
+      "port": 8081
+    },
+    {
+      "name": "finguard-ui",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "upi-client", "run", "dev"],
+      "port": 5173
+    }
+  ]
+}

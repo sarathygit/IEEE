@@ -1,0 +1,134 @@
+{
+  "injection_overall": {
+    "TP": 59,
+    "FP": 429,
+    "FN": 341,
+    "TN": 49571,
+    "precision": 0.12090163934426229,
+    "recall": 0.1475,
+    "f1": 0.13288288288288286,
+    "fpr": 0.00858,
+    "roc_auc": 0.723084075
+  },
+  "injection_per_archetype": {
+    "A off-hour drain": {
+      "n": 100,
+      "mean_score": 0.7812009774713657,
+      "recall_at_085": 0.26
+    },
+    "B velocity (neg-ctrl)": {
+      "n": 100,
+      "mean_score": 0.350263365218079,
+      "recall_at_085": 0.0
+    },
+    "C category anomaly": {
+      "n": 100,
+      "mean_score": 0.5674229855616377,
+      "recall_at_085": 0.07
+    },
+    "D context anomaly": {
+      "n": 100,
+      "mean_score": 0.7990839241486388,
+      "recall_at_085": 0.26
+    }
+  },
+  "clean_test_fpr_at_085": 0.00858,
+  "ablation": {
+    "L1 form-only": {
+      "n_features_raw": 3,
+      "roc_auc": 0.8604208750000001,
+      "recall_at_085": 0.01,
+      "fpr_at_085": 0.00546,
+      "mean_clean": 0.27203092663699385,
+      "mean_synth": 0.5942112980251953,
+      "separation": 0.3221803713882015,
+      "per_archetype_recall": {
+        "A off-hour drain": 0.04,
+        "B velocity (neg-ctrl)": 0.0,
+        "C category anomaly": 0.0,
+        "D context anomaly": 0.0
+      }
+    },
+    "L2 +telemetry": {
+      "n_features_raw": 5,
+      "roc_auc": 0.747012725,
+      "recall_at_085": 0.2275,
+      "fpr_at_085": 0.00962,
+      "mean_clean": 0.34837398187632773,
+      "mean_synth": 0.6042302468679437,
+      "separation": 0.25585626499161596,
+      "per_archetype_recall": {
+        "A off-hour drain": 0.46,
+        "B velocity (neg-ctrl)": 0.0,
+        "C category anomaly": 0.05,
+        "D context anomaly": 0.4
+      }
+    },
+    "L3 +server enrichment": {
+      "n_features_raw": 13,
+      "roc_auc": 0.723084075,
+      "recall_at_085": 0.1475,
+      "fpr_at_085": 0.00858,
+      "mean_clean": 0.46003076665168374,
+      "mean_synth": 0.6244928130999303,
+      "separation": 0.16446204644824658,
+      "per_archetype_recall": {
+        "A off-hour drain": 0.26,
+        "B velocity (neg-ctrl)": 0.0,
+        "C category anomaly": 0.07,
+        "D context anomaly": 0.26
+      }
+    }
+  },
+  "baselines": {
+    "static rules": {
+      "TP": 263,
+      "FP": 598,
+      "FN": 137,
+      "TN": 49402,
+      "precision": 0.305458768873403,
+      "recall": 0.6575,
+      "f1": 0.41712926249008725,
+      "fpr": 0.01196,
+      "note": "p99=8998, p95=4683"
+    },
+    "LOF": {
+      "TP": 298,
+      "FP": 500,
+      "FN": 102,
+      "TN": 49500,
+      "precision": 0.37343358395989973,
+      "recall": 0.745,
+      "f1": 0.49749582637729545,
+      "fpr": 0.01,
+      "threshold": -0.3908322856237881,
+      "roc_auc": 0.8961861500000001,
+      "train_subsample": 40000
+    },
+    "OC-SVM": {
+      "TP": 270,
+      "FP": 500,
+      "FN": 130,
+      "TN": 49500,
+      "precision": 0.35064935064935066,
+      "recall": 0.675,
+      "f1": 0.4615384615384615,
+      "fpr": 0.01,
+      "threshold": 0.03786355423480142,
+      "roc_auc": 0.78267965,
+      "train_subsample": 15000
+    },
+    "Isolation Forest": {
+      "TP": 65,
+      "FP": 500,
+      "FN": 335,
+      "TN": 49500,
+      "precision": 0.11504424778761062,
+      "recall": 0.1625,
+      "f1": 0.13471502590673576,
+      "fpr": 0.01,
+      "threshold": 0.8403215564276542,
+      "roc_auc": 0.723084075
+    }
+  }
+}

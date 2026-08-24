@@ -1,0 +1,156 @@
+{
+  "threshold_sweep": [
+    {
+      "TP": 233,
+      "FP": 8855,
+      "FN": 167,
+      "TN": 41145,
+      "precision": 0.025638204225352113,
+      "recall": 0.5825,
+      "f1": 0.04911467116357504,
+      "fpr": 0.1771,
+      "tau": 0.6,
+      "blocked_per_100k_genuine": 17710
+    },
+    {
+      "TP": 215,
+      "FP": 5506,
+      "FN": 185,
+      "TN": 44494,
+      "precision": 0.03758084251005069,
+      "recall": 0.5375,
+      "f1": 0.0702499591570005,
+      "fpr": 0.11012,
+      "tau": 0.65,
+      "blocked_per_100k_genuine": 11012
+    },
+    {
+      "TP": 180,
+      "FP": 3190,
+      "FN": 220,
+      "TN": 46810,
+      "precision": 0.05341246290801187,
+      "recall": 0.45,
+      "f1": 0.09549071618037136,
+      "fpr": 0.0638,
+      "tau": 0.7,
+      "blocked_per_100k_genuine": 6380
+    },
+    {
+      "TP": 130,
+      "FP": 1787,
+      "FN": 270,
+      "TN": 48213,
+      "precision": 0.06781429316640585,
+      "recall": 0.325,
+      "f1": 0.11221406991799741,
+      "fpr": 0.03574,
+      "tau": 0.75,
+      "blocked_per_100k_genuine": 3574
+    },
+    {
+      "TP": 95,
+      "FP": 904,
+      "FN": 305,
+      "TN": 49096,
+      "precision": 0.09509509509509509,
+      "recall": 0.2375,
+      "f1": 0.13581129378127232,
+      "fpr": 0.01808,
+      "tau": 0.8,
+      "blocked_per_100k_genuine": 1808
+    },
+    {
+      "TP": 59,
+      "FP": 429,
+      "FN": 341,
+      "TN": 49571,
+      "precision": 0.12090163934426229,
+      "recall": 0.1475,
+      "f1": 0.13288288288288286,
+      "fpr": 0.00858,
+      "tau": 0.85,
+      "blocked_per_100k_genuine": 858
+    },
+    {
+      "TP": 39,
+      "FP": 206,
+      "FN": 361,
+      "TN": 49794,
+      "precision": 0.15918367346938775,
+      "recall": 0.0975,
+      "f1": 0.12093023255813953,
+      "fpr": 0.00412,
+      "tau": 0.9,
+      "blocked_per_100k_genuine": 412
+    },
+    {
+      "TP": 15,
+      "FP": 74,
+      "FN": 385,
+      "TN": 49926,
+      "precision": 0.16853932584269662,
+      "recall": 0.0375,
+      "f1": 0.06134969325153374,
+      "fpr": 0.00148,
+      "tau": 0.95,
+      "blocked_per_100k_genuine": 148
+    },
+    {
+      "TP": 8,
+      "FP": 28,
+      "FN": 392,
+      "TN": 49972,
+      "precision": 0.2222222222222222,
+      "recall": 0.02,
+      "f1": 0.03669724770642202,
+      "fpr": 0.00056,
+      "tau": 0.99,
+      "blocked_per_100k_genuine": 56
+    }
+  ],
+  "scorer_substitution": {
+    "isolation_forest": {
+      "TP": 59,
+      "FP": 429,
+      "FN": 341,
+      "TN": 49571,
+      "precision": 0.12090163934426229,
+      "recall": 0.1475,
+      "f1": 0.13288288288288286,
+      "fpr": 0.00858,
+      "roc_auc": 0.723084075
+    },
+    "lof": {
+      "TP": 298,
+      "FP": 429,
+      "FN": 102,
+      "TN": 49571,
+      "precision": 0.40990371389270974,
+      "recall": 0.745,
+      "f1": 0.5288376220053238,
+      "fpr": 0.00858,
+      "tau_matched": 0.8165,
+      "target_fpr": 0.00858,
+      "roc_auc": 0.8959139500000001
+    },
+    "per_archetype": {
+      "A off-hour drain": {
+        "iforest_recall": 0.26,
+        "lof_recall": 1.0
+      },
+      "B velocity (neg-ctrl)": {
+        "iforest_recall": 0.0,
+        "lof_recall": 0.01
+      },
+      "C category anomaly": {
+        "iforest_recall": 0.07,
+        "lof_recall": 1.0
+      },
+      "D context anomaly": {
+        "iforest_recall": 0.26,
+        "lof_recall": 0.97
+      }
+    }
+  }
+}

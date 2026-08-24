@@ -1,0 +1,94 @@
+{
+  "comparison": {
+    "rules_only": {
+      "TP": 200,
+      "FP": 71,
+      "FN": 200,
+      "TN": 49929,
+      "precision": 0.7380073800738007,
+      "recall": 0.5,
+      "f1": 0.5961251862891207,
+      "fpr": 0.00142,
+      "note": "hard rules fire deterministically; FPR not tunable"
+    },
+    "iforest_only": {
+      "TP": 59,
+      "FP": 430,
+      "FN": 341,
+      "TN": 49570,
+      "precision": 0.12065439672801637,
+      "recall": 0.1475,
+      "f1": 0.13273340832395952,
+      "fpr": 0.0086,
+      "threshold": 0.8493,
+      "roc_auc": 0.723084075
+    },
+    "lof_only": {
+      "TP": 298,
+      "FP": 430,
+      "FN": 102,
+      "TN": 49570,
+      "precision": 0.40934065934065933,
+      "recall": 0.745,
+      "f1": 0.5283687943262412,
+      "fpr": 0.0086,
+      "threshold": 0.8159,
+      "roc_auc": 0.8959139500000001
+    },
+    "hybrid": {
+      "TP": 298,
+      "FP": 430,
+      "FN": 102,
+      "TN": 49570,
+      "precision": 0.40934065934065933,
+      "recall": 0.745,
+      "f1": 0.5283687943262412,
+      "fpr": 0.0086,
+      "threshold": 0.8023,
+      "roc_auc": 0.881155475
+    },
+    "hybrid_with_rule_escalation": {
+      "TP": 298,
+      "FP": 486,
+      "FN": 102,
+      "TN": 49514,
+      "precision": 0.38010204081632654,
+      "recall": 0.745,
+      "f1": 0.5033783783783783,
+      "fpr": 0.00972,
+      "roc_auc": 0.881155475,
+      "threshold": 0.8023
+    }
+  },
+  "per_archetype": {
+    "A off-hour drain": {
+      "iforest": 0.26,
+      "lof": 1.0,
+      "hybrid": 1.0
+    },
+    "B velocity (neg-ctrl)": {
+      "iforest": 0.0,
+      "lof": 0.01,
+      "hybrid": 0.01
+    },
+    "C category anomaly": {
+      "iforest": 0.07,
+      "lof": 1.0,
+      "hybrid": 1.0
+    },
+    "D context anomaly": {
+      "iforest": 0.26,
+      "lof": 0.97,
+      "hybrid": 0.97
+    }
+  },
+  "rule_thresholds": {
+    "extreme_amount": 16450.01200000022,
+    "high_amount": 8998.01000000001,
+    "small_ticket_ceiling": 11136.030000000028
+  },
+  "fusion_weights": {
+    "iforest": 0.2,
+    "lof": 0.8
+  }
+}
