@@ -49,38 +49,46 @@ themselves, which is the documented methodology.
 | One-Class SVM | 0.783 | 0.675 | 0.351 | 0.462 | RBF, ν=0.002, 15K train subsample |
 | Isolation Forest (deployed) | 0.723 | 0.163 | — | — | 200 trees; production τ=0.85 gives R=0.148 |
 
-### Table V. Measured system latency (local deployment, Apple Silicon, 8 cores)
+### Table V. Measured system latency — HYBRID engine (local deployment, Apple Silicon, 8 cores)
 
 | Path | Latency |
 |---|---|
-| ML inference hop (warm, incl. HTTP) | 9–15 ms |
-| End-to-end switch processing (auth → lock → score → verdict → commit/rollback) | 11–12 ms mean, p99 14 ms (single client) |
-| Model bundle load at service startup (off hot path) | ~1 s |
+| Hybrid scoring hop (warm, incl. HTTP) | 18.7 ms mean, p99 23.4 ms |
+| └ Tier 2 Isolation Forest (200 trees) | 9.25 ms |
+| └ Preprocessor transform | 3.56 ms |
+| └ Tier 3 Local Outlier Factor (40k refs) | 3.08 ms |
+| └ Tier 1 rule engine | 0.11 ms |
+| Switch-side work (auth, locks, JPA, commit) | ≈3.6 ms |
+| **End-to-end switch processing (auth → lock → score → verdict → commit/rollback)** | **22.3 ms mean, p50 22.0, p95 23.0, p99 29.2 (single client)** |
+| Model bundle load at service startup (off hot path) | ~1.7 s |
 
-### Table VI. End-to-end concurrency: contended vs. uncontended ledger access (400 requests per level)
+*Measured on the deployed three-tier hybrid. An earlier single-detector
+configuration measured 11–12 ms; the additional ~10 ms is attributable almost
+entirely to the Isolation Forest tier, which contributes 9.25 ms of inference
+for a 0.20 fusion weight.*
+
+### Table VI. End-to-end concurrency: contended vs. uncontended ledger access (200 requests per level, hybrid engine)
 
 | Concurrency | Uncontended TPS | Uncontended p50 / p95 (ms) | Contended TPS | Contended p50 / p95 (ms) |
 |---|---|---|---|---|
-| 1 | 80.0 | 12.3 / 13.8 | 87.3 | 11.2 / 12.9 |
-| 10 | 90.4 | 32.9 / 37.6 | 94.5 | 31.3 / 34.3 |
-| 25 | 90.2 | 198.0 / 211.7 | 95.4 | 185.5 / 378.7 |
-| 50 | 93.1 | 458.6 / 466.8 | 97.1 | 440.7 / 812.9 |
-| 100 | 93.8 | 983.3 / 1009.8 | 95.8 | 963.0 / 1305.4 |
+| 1 | 44.5 | 22.3 / 23.8 | 47.2 | 21.0 / 21.9 |
+| 10 | 49.2 | 60.8 / 63.2 | 50.4 | 59.4 / 61.7 |
+| 25 | 49.5 | 362.3 / 374.5 | 50.6 | 353.7 / 372.5 |
+| 50 | 50.0 | 856.5 / 864.2 | 50.8 | 844.8 / 849.1 |
 
 *All requests returned HTTP 200; no errors at any level. Isolated p99 outliers of
 ≈4 s were observed at the onset of each burst in both regimes, attributable to
 JVM JIT warm-up and per-request connection establishment in the harness; they are
 reported unfiltered.*
 
-### Table VII. Scoring-node isolation and horizontal-scaling remedy (direct `/score` load, 400 requests per level)
+### Table VII. Scoring-node isolation and horizontal-scaling remedy (direct `/score` load, 200 requests per level, hybrid engine)
 
 | Concurrency | 1 worker TPS | 1 worker p95 (ms) | 4 workers TPS | 4 workers p95 (ms) | Speed-up |
 |---|---|---|---|---|---|
-| 1 | 110.9 | 10.4 | 110.6 | 10.5 | 1.00× |
-| 10 | 95.6 | 137.0 | **328.9** | 50.2 | **3.44×** |
-| 25 | 70.3 | 479.5 | **299.0** | 148.1 | **4.25×** |
-| 50 | 46.9 | 1371.8 | **253.3** | 275.3 | **5.40×** |
-| 100 | 41.1 | 2984.1 | **221.9** | 551.0 | **5.40×** |
+| 1 | 55.4 | 18.5 | 54.5 | 19.0 | 0.98× |
+| 10 | 62.2 | 205.9 | **126.4** | 125.9 | **2.03×** |
+| 25 | 62.3 | 522.0 | **194.4** | 217.9 | **3.12×** |
+| 50 | 62.6 | 924.2 | **196.0** | 382.5 | **3.13×** |
 
 ---
 
@@ -186,11 +194,11 @@ production selection would weigh against LOF's detection superiority.
 
 **E. Latency and concurrency (Tables V–VII).** Under a single client the
 full inline path — authentication, ledger locking, provisional movement,
-scoring round-trip, and commit or rollback — completes in 11–12 ms mean
-(p99 14 ms), comfortably inside the 50 ms design budget.
+scoring round-trip, and commit or rollback — completes in 22.3 ms mean
+(p99 29.2 ms), inside the 50 ms design budget.
 
 Under concurrent load the system exhibits a throughput ceiling of
-approximately 95 transactions per second, beyond which latency grows
+approximately 50 transactions per second, beyond which latency grows
 linearly with offered concurrency (p50 983 ms at 100 concurrent clients)
 while throughput remains flat — the signature of a single saturated serial
 resource. Crucially, the contended and uncontended regimes are
@@ -204,9 +212,9 @@ concurrency 1 to 41.1 TPS at concurrency 100, consistent with global
 interpreter lock contention among request threads executing CPU-bound
 vectorized inference. Because the scoring node is stateless, the remedy is
 horizontal: replicating it across four worker processes raises throughput
-to 328.9 TPS at concurrency 10 and 221.9 TPS at concurrency 100 — speed-ups
-of 3.4× and 5.4× respectively — while reducing p95 latency at concurrency
-50 from 1372 ms to 275 ms.
+to 126.4 TPS at concurrency 10 and 196.0 TPS at concurrency 50 — speed-ups
+of 2.0× and 3.1× respectively — while reducing p95 latency at concurrency
+50 from 924 ms to 383 ms.
 
 This result is architecturally significant. The design decision most open
 to criticism — holding database row locks across a synchronous network
@@ -255,10 +263,10 @@ than a memory-hard KDF; transport is plaintext HTTP; sessions are
 unauthenticated. These were excluded from the latency-isolation prototype
 deliberately and are prerequisites for any deployment.
 
-**Throughput ceiling and deployment scope.** The measured ceiling of ~95
-TPS on a single 8-core host is an artifact of single-process inference,
+**Throughput ceiling and deployment scope.** The measured ceiling of ~50
+TPS on a single 8-core host with the hybrid engine is an artifact of single-process inference,
 not of the interception design; four-way replication of the stateless
-scoring tier yields 3.4–5.4× improvement (Table VII). Validating linear
+scoring tier yields 2.0–3.1× improvement (Table VII). Validating linear
 scale-out across physical hosts, and characterizing lock contention at
 concurrency levels where it does become dominant, remain open. All
 measurements are single-host, loopback-networked, and therefore exclude

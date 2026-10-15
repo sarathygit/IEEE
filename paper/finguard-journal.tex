@@ -69,8 +69,8 @@ substitution, establishing that blind spot as architectural rather than
 model-dependent. Fourth, concurrency measurement falsifies the expected
 hypothesis that lock-holding across the scoring hop limits throughput: the
 constraint resides in the stateless inference tier, where four-way
-replication yields $3.4$--$5.4\times$ speed-up. Single-client end-to-end
-latency is 11--12\,ms. We conclude with a deployment recommendation derived
+replication yields $2.0$--$3.1\times$ speed-up. Single-client end-to-end
+latency is $22.3$\,ms. We conclude with a deployment recommendation derived
 from these measurements.
 \end{abstract}
 
@@ -533,13 +533,14 @@ transfers.
 \caption{Per-transaction inference cost, single warm process}
 \label{tab:infcost}
 \centering
-\begin{tabular}{lccc}
+\begin{tabular}{lcc}
 \toprule
-\textbf{Scorer} & \textbf{Mean (ms)} & \textbf{p95 (ms)} &
-\textbf{Model size} \\
+\textbf{Component} & \textbf{Mean (ms)} & \textbf{Model size} \\
 \midrule
-Isolation Forest (200 trees) & 5.46 & 5.67 & 2.7\,MB \\
-LOF ($k=20$, 40k reference)  & \textbf{1.67} & \textbf{1.97} & 13.4\,MB \\
+Isolation Forest (200 trees) & 9.25 & 2.7\,MB \\
+LOF ($k=20$, 40k reference)  & \textbf{3.08} & 13.4\,MB \\
+Rule engine                  & \textbf{0.11} & --- \\
+Preprocessor transform       & 3.56 & --- \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -547,8 +548,8 @@ LOF ($k=20$, 40k reference)  & \textbf{1.67} & \textbf{1.97} & 13.4\,MB \\
 For an inline blocker, detection gains that cost latency may be
 unaffordable. We therefore measured per-transaction inference cost
 directly (Table~\ref{tab:infcost}). Contrary to expectation, LOF is not
-merely competitive but $3.3\times$ \emph{faster} in this configuration
-(1.67\,ms vs.\ 5.46\,ms mean), at the cost of a larger resident model
+merely competitive but $3.0\times$ \emph{faster} in this configuration
+($3.08$\,ms vs.\ $9.25$\,ms mean), at the cost of a larger resident model
 (13.4\,MB vs.\ 2.7\,MB) --- immaterial on any realistic serving host. The
 forest's per-query cost is dominated by traversing 200 trees in Python-level
 loops, whereas LOF's neighbour query over a 40{,}000-point reference set is
@@ -561,7 +562,7 @@ adjudication. We recommend it for deployment (Section~\ref{sec:deploy}).
 \subsection{Latency and concurrency}
 
 \begin{table}[t]
-\caption{End-to-end throughput and latency; 400 requests per level}
+\caption{End-to-end throughput and latency; 200 requests per level}
 \label{tab:conc}
 \centering
 \begin{tabular}{lcccc}
@@ -572,11 +573,10 @@ adjudication. We recommend it for deployment (Section~\ref{sec:deploy}).
 \textbf{Conc.} & \textbf{TPS} & \textbf{p95 (ms)} &
 \textbf{TPS} & \textbf{p95 (ms)} \\
 \midrule
-1   & 80.0 & 13.8   & 87.3 & 12.9 \\
-10  & 90.4 & 37.6   & 94.5 & 34.3 \\
-25  & 90.2 & 211.7  & 95.4 & 378.7 \\
-50  & 93.1 & 466.8  & 97.1 & 812.9 \\
-100 & 93.8 & 1009.8 & 95.8 & 1305.4 \\
+1   & 44.5 & 23.8  & 47.2 & 21.9 \\
+10  & 49.2 & 63.2  & 50.4 & 61.7 \\
+25  & 49.5 & 374.5 & 50.6 & 372.5 \\
+50  & 50.0 & 864.2 & 50.8 & 849.1 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -593,43 +593,50 @@ adjudication. We recommend it for deployment (Section~\ref{sec:deploy}).
 \textbf{Conc.} & \textbf{TPS} & \textbf{p95} & \textbf{TPS} &
 \textbf{p95} \\
 \midrule
-1   & 110.9 & 10.4   & 110.6 & 10.5  \\
-10  & 95.6  & 137.0  & \textbf{328.9} & 50.2  \\
-25  & 70.3  & 479.5  & \textbf{299.0} & 148.1 \\
-50  & 46.9  & 1371.8 & \textbf{253.3} & 275.3 \\
-100 & 41.1  & 2984.1 & \textbf{221.9} & 551.0 \\
+1   & 55.4 & 18.5  & 54.5 & 19.0  \\
+10  & 62.2 & 205.9 & \textbf{126.4} & 125.9 \\
+25  & 62.3 & 522.0 & \textbf{194.4} & 217.9 \\
+50  & 62.6 & 924.2 & \textbf{196.0} & 382.5 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-Under a single client the full inline path completes in 11--12\,ms mean
-(p99 14\,ms), inside the 50\,ms design budget.
+Under a single client the full inline path completes in $22.3$\,ms mean
+($\mathrm{p}50$ $22.0$\,ms, $\mathrm{p}99$ $29.2$\,ms), inside the 50\,ms
+design budget. Decomposing this figure, the hybrid scoring hop accounts for
+$18.7$\,ms and switch-side work --- authentication, lock acquisition,
+persistence and commit --- for only $3.6$\,ms. Within the scoring hop the
+Isolation Forest tier costs $9.25$\,ms, preprocessing $3.56$\,ms, the LOF
+tier $3.08$\,ms and the rule tier $0.11$\,ms. The forest is thus
+simultaneously the most expensive tier and, by Table~\ref{tab:baselines},
+the least discriminative.
 
 Under concurrent load (Table~\ref{tab:conc}) throughput saturates near
-95\,TPS while latency grows linearly with offered concurrency --- the
+50\,TPS while latency grows linearly with offered concurrency --- the
 signature of one saturated serial resource. Critically, contended and
-uncontended regimes are statistically indistinguishable ($95.8$ vs.\ $93.8$
-TPS at concurrency 100). This \emph{falsifies} the hypothesis we set out to
+uncontended regimes are statistically indistinguishable ($50.8$ vs.\ $50.0$
+TPS at concurrency 50). This \emph{falsifies} the hypothesis we set out to
 test, namely that pessimistic ledger locks held across the scoring
 round-trip constitute the scaling constraint.
 
 Isolating the scoring node (Table~\ref{tab:scale}) locates the true
 bottleneck. Served by a single Python process, \texttt{/score} throughput
-\emph{degrades} from $110.9$\,TPS at concurrency~1 to $41.1$\,TPS at
-concurrency~100, consistent with global-interpreter-lock contention among
+plateaus near $62$\,TPS while p95 latency rises to $924$\,ms at
+concurrency~50, consistent with global-interpreter-lock contention among
 threads executing CPU-bound vectorised inference. Because the node is
 stateless, the remedy is horizontal: four worker processes yield
-$328.9$\,TPS at concurrency~10 and $221.9$\,TPS at concurrency~100 ---
-speed-ups of $3.4\times$ and $5.4\times$ --- while reducing p95 latency at
-concurrency~50 from 1372\,ms to 275\,ms.
+$126.4$\,TPS at concurrency~10 and $196.0$\,TPS at concurrency~50 ---
+speed-ups of $2.0\times$ and $3.1\times$ --- while reducing p95 latency at
+concurrency~50 from 924\,ms to 383\,ms.
 
 \begin{figure}[t]
 \centering
 \includegraphics[width=\columnwidth]{figs/fig3_scaling.pdf}
-\caption{Scoring-node throughput. A single process degrades under
-concurrency (GIL contention); four worker processes restore near-linear
-capacity, confirming the bottleneck lies in the stateless tier rather than
-in the transactional ledger path.}
+\caption{Scoring-node throughput. A single process plateaus near 62\,TPS
+under rising concurrency (GIL contention), with p95 latency growing to
+924\,ms; four worker processes raise capacity to 196\,TPS, confirming the
+bottleneck lies in the stateless tier rather than in the transactional
+ledger path.}
 \label{fig:scaling}
 \end{figure}
 
@@ -650,7 +657,7 @@ read as merely diagnostic.
 
 \textbf{Substitute the scorer.} LOF dominates the Isolation Forest on
 detection at matched false-positive cost ($0.745$ vs.\ $0.147$) and on
-inference latency ($1.67$\,ms vs.\ $5.46$\,ms). The interception
+inference latency ($3.08$\,ms vs.\ $9.25$\,ms). The interception
 architecture is unchanged by the substitution: the scoring node's contract
 is a feature vector in, a calibrated score out. This is a configuration
 change, not a redesign.

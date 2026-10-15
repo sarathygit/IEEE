@@ -1,0 +1,56 @@
+# Render blueprint for the two back-end services. The React client deploys
+# separately on Vercel (see upi-client/.env.example).
+#
+# Deploy order matters: the scorer must exist before the switch can be given
+# its URL, because the switch fails closed when the scorer is unreachable.
+#
+# After the first deploy, set these by hand in the Render dashboard, since
+# each depends on a URL the platform only assigns at creation time:
+#   finguard-ml      CORS_ALLOWED_ORIGINS -> your Vercel origin(s)
+#   finguard-switch  ML_BASE_URL          -> https://finguard-ml.onrender.com
+#   finguard-switch  CORS_ALLOWED_ORIGINS -> your Vercel origin(s)
+
+services:
+  # ---- Python Predictive Intelligence Core (FastAPI) -------------------
+  - type: web
+    name: finguard-ml
+    runtime: docker
+    rootDir: ml-service
+    dockerfilePath: ./Dockerfile
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      # One worker per 512 MB: the loaded hybrid bundle is ~184 MB RSS.
+      - key: WEB_CONCURRENCY
+        value: "1"
+      - key: CORS_ALLOWED_ORIGINS
+        sync: false
+
+  # ---- Enterprise Switch (Spring Boot + in-process H2) ----------------
+  - type: web
+    name: finguard-switch
+    runtime: docker
+    rootDir: switch-service
+    dockerfilePath: ./Dockerfile
+    plan: free
+    healthCheckPath: /api/v1/upi/transactions
+    envVars:
+      - key: ML_BASE_URL
+        sync: false
+      - key: CORS_ALLOWED_ORIGINS
+        sync: false
+      # The free plan idles a service out after ~15 min; a cold start plus the
+      # ~1.8 s bundle load far exceeds the local 300 ms / 1500 ms timeouts, and
+      # fail-closed would turn every first request into an HTTP 503. These
+      # relaxed values apply ONLY to this deployment: the reported latency
+      # measurements were taken with the local defaults.
+      - key: ML_CONNECT_TIMEOUT_MS
+        value: "10000"
+      - key: ML_READ_TIMEOUT_MS
+        value: "30000"
+      # The H2 console must not be reachable from the public internet.
+      - key: H2_CONSOLE
+        value: "false"
+      # Demo accounts only; the benchmark load pool is not needed in a deploy.
+      - key: LOAD_POOL_SIZE
+        value: "0"

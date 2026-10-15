@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { pay, fetchAccount, fetchRecentTransactions, fetchMlHealth } from './api.js';
+import { pay, fetchAccount, fetchRecentTransactions, fetchMlHealth,
+         SWITCH_LABEL, ML_LABEL } from './api.js';
 import { collectTelemetry } from './telemetry.js';
 
 /**
@@ -136,11 +137,11 @@ export default function App() {
         <span className="statusbar-brand">RT-IIPF // CORE SWITCH MONITOR</span>
         <span className="statusbar-sep">|</span>
         <span className={mlUp ? 'svc up' : 'svc down'}>
-          <i className="dot" /> FASTAPI CORE: {mlUp ? 'CONNECTED' : 'OFFLINE'} (:8001)
+          <i className="dot" /> FASTAPI CORE: {mlUp ? 'CONNECTED' : 'OFFLINE'} ({ML_LABEL})
         </span>
         <span className="statusbar-sep">|</span>
         <span className={switchUp ? 'svc up' : 'svc down'}>
-          <i className="dot" /> H2 ENGINE: {switchUp ? 'ACTIVE' : 'UNREACHABLE'} (:8081)
+          <i className="dot" /> H2 ENGINE: {switchUp ? 'ACTIVE' : 'UNREACHABLE'} ({SWITCH_LABEL})
         </span>
         <span className="statusbar-fill" />
         <span className="statusbar-meta">

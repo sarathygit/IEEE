@@ -1,0 +1,10 @@
+.venv/
+venv/
+__pycache__/
+*.pyc
+# Evaluation and benchmarking harnesses are not needed to serve /score.
+evaluate*.py
+bench*.py
+make_figures*.py
+train*.py
+*.log

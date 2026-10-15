@@ -42,6 +42,8 @@ detectors) instead of erroring the hot path.
 """
 
 import logging
+import os
+import re
 import time
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -163,11 +165,30 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# Allow the dashboard (Vite dev server) to poll /health for its status bar.
-# Scoring traffic itself is server-to-server (Spring Boot) and unaffected.
+# Allow the dashboard to poll /health for its status bar. Scoring traffic
+# itself is server-to-server (Spring Boot) and unaffected by CORS.
+#
+# CORS_ALLOWED_ORIGINS is a comma-separated list; the default reproduces the
+# previous hard-coded Vite/CRA dev-server allow-list, so local development is
+# unchanged. Entries are matched exactly, except that a single leading "*."
+# label becomes a regex so preview deployments resolve
+# (e.g. "https://*.vercel.app").
+_origins = [
+    o.strip()
+    for o in os.getenv(
+        "CORS_ALLOWED_ORIGINS", "http://localhost:5173,http://localhost:3000"
+    ).split(",")
+    if o.strip()
+]
+_exact = [o for o in _origins if "*" not in o]
+_wild = [
+    re.escape(o).replace(r"\*", r"[^.]+") for o in _origins if "*" in o
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://localhost:3000"],
+    allow_origins=_exact,
+    allow_origin_regex="|".join(_wild) if _wild else None,
     allow_methods=["GET"],
     allow_headers=["*"],
 )

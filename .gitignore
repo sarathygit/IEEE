@@ -13,6 +13,9 @@ npm-debug.log*
 venv/
 env/
 
+# Java build output (rebuilt from source by Maven / the Dockerfile)
+**/target/
+
 # OS & Environment
 .DS_Store
 .env

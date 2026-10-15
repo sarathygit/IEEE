@@ -280,7 +280,7 @@ ABSTRACT = (
     "durable existence. Evaluated on 250,000 UPI transactions using synthetic "
     "fraud injection, the hybrid achieved 0.745 recall at a 0.86 percent "
     "false-positive rate, a fivefold improvement over a single Isolation Forest, "
-    "with the inline decision measured at eleven to twelve milliseconds."
+    "with the inline decision measured at twenty-two milliseconds."
 )
 para(doc, ABSTRACT, space_after=10)
 
@@ -688,16 +688,17 @@ para(doc, "The proposed system is technically feasible because every capability 
 para(doc, "The machine learning requirement is equally well supported. Both "
      "detectors used in the hybrid engine are available in scikit-learn, are "
      "unsupervised and therefore require no labelled fraud corpus, and have "
-     "inference costs measured in single-digit milliseconds on commodity hardware. "
+     "inference costs measured in single-digit milliseconds per detector on "
+     "commodity hardware. "
      "The decisive technical question was whether the complete inline path could "
      "complete within a latency budget acceptable on a live payment rail. This was "
-     "answered empirically: the measured end-to-end decision time is eleven to "
-     "twelve milliseconds, well inside the fifty millisecond budget set at design "
+     "answered empirically: the measured end-to-end decision time is twenty-two "
+     "milliseconds, well inside the fifty millisecond budget set at design "
      "time, confirming technical feasibility rather than assuming it.")
 para(doc, "The heterogeneous three-service architecture introduces a network hop "
      "between the switch and the scoring service, which was a legitimate concern "
      "because ledger locks are held for its duration. Measurement showed this hop to "
-     "cost nine to fifteen milliseconds including HTTP overhead, and a concurrency "
+     "cost approximately nineteen milliseconds including HTTP overhead, and a concurrency "
      "study established that the pessimistic locks are not the throughput constraint "
      "at the levels examined. Development requires only a Java Development Kit, a "
      "Python interpreter and Node.js, all freely available and already familiar.")
@@ -726,7 +727,7 @@ subsection(doc, "3.1.1.3", "Operational Feasibility")
 para(doc, "The system is operationally feasible because it imposes no additional "
      "burden on the customer. The fraud check is invisible in the normal case: the "
      "user enters the payee address, amount and MPIN exactly as in any existing UPI "
-     "application, and the eleven to twelve millisecond decision is imperceptible "
+     "application, and the twenty-two millisecond decision is imperceptible "
      "against the several hundred milliseconds of ordinary network and interface "
      "latency. No new interaction step is introduced for a legitimate payment.")
 para(doc, "The device telemetry that contributes to the feature vector is captured "
@@ -1137,19 +1138,19 @@ para(doc, "The rule tier contributes no unique detections on this evaluation set
 para(doc, "Latency was measured on the complete inline path and is reported in "
      "Table 4.4. A concurrency study was additionally performed at up to one hundred "
      "simultaneous clients. It established that the throughput ceiling of "
-     "approximately ninety-five transactions per second is not caused by the "
+     "approximately fifty transactions per second is not caused by the "
      "pessimistic ledger locks, since contended and uncontended workloads were "
      "statistically indistinguishable, but by the single-process intelligence "
      "service. Because that service is stateless, replicating it across four worker "
-     "processes raised throughput by a factor of between 3.4 and 5.4. The "
+     "processes raised throughput by a factor of between 2.0 and 3.1. The "
      "transactional mechanism and the scoring capacity therefore scale independently.")
 caption(doc, "Table 4.4: Measured System Latency")
 add_table(doc, [
     ["Measurement", "Value"],
-    ["End-to-end inline decision (single client, mean)", "11–12 ms"],
-    ["End-to-end inline decision (99th percentile)", "14 ms"],
-    ["Hybrid scoring hop including HTTP overhead", "11–13 ms"],
-    ["Model bundle load at service startup (off the hot path)", "≈ 1 s"],
+    ["End-to-end inline decision (single client, mean)", "22.3 ms"],
+    ["End-to-end inline decision (99th percentile)", "29.2 ms"],
+    ["Hybrid scoring hop including HTTP overhead", "18.7 ms"],
+    ["Model bundle load at service startup (off the hot path)", "≈ 1.7 s"],
     ["Design budget", "50 ms"],
 ], widths=[4.3, 1.9], size=Pt(10))
 

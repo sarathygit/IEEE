@@ -196,7 +196,7 @@ NOTES = {
     "AFTER money moves; we block BEFORE it moves.",
  2: "Walk the agenda in ten seconds.",
  3: "Key sentence: a blocked transfer never exists in the ledger, so there is "
-    "nothing to claw back. Mention the 11-12 ms measured decision time.",
+    "nothing to claw back. Mention the 22 ms measured decision time.",
  4: "Five objectives. Emphasise objective 2 (atomic rollback with surviving "
     "audit) - that is the novel engineering contribution.",
  5: "State the base paper and, importantly, the gap: it scores transactions but "
@@ -252,7 +252,7 @@ ABSTRACT = (
     "commits the ledger; a fraudulent verdict triggers an atomic rollback and "
     "locks the payer account, while the audit record survives the rollback through "
     "an independent transaction. The prototype achieves an end-to-end decision in "
-    "11-12 ms, so a blocked transfer never attains durable existence in the ledger "
+    "22 ms, so a blocked transfer never attains durable existence in the ledger "
     "and there is nothing to claw back.")
 
 OBJECTIVES = [
@@ -432,7 +432,7 @@ PROPOSED_1 = [
     "Requires no fraud labels, so novel attack patterns can be flagged.",
     "Fails closed: an unreachable scoring node rejects payments rather than "
     "admitting them unscored.",
-    "Achieves an end-to-end decision in 11-12 ms, within the sub-50 ms budget.",
+    "Achieves an end-to-end decision in 22 ms, within the sub-50 ms budget.",
 ]
 
 MODULES = [

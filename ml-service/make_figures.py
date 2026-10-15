@@ -118,9 +118,9 @@ def main():
     print("wrote fig2_roc_comparison.pdf")
 
     # ---- Fig 3: scaling --------------------------------------------------
-    conc = [1, 10, 25, 50, 100]
-    one_w = [110.9, 95.6, 70.3, 46.9, 41.1]
-    four_w = [110.6, 328.9, 299.0, 253.3, 221.9]
+    conc = [1, 10, 25, 50]
+    one_w = [55.4, 62.2, 62.3, 62.6]
+    four_w = [54.5, 126.4, 194.4, 196.0]
     fig, ax = plt.subplots(figsize=(COL, 2.1))
     ax.plot(conc, one_w, "o-", lw=1.2, ms=4, color="#c0392b",
             label="1 worker process")

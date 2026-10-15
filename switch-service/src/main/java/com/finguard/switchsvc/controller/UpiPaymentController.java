@@ -9,7 +9,6 @@ import com.finguard.switchsvc.repository.BalanceRepository;
 import com.finguard.switchsvc.service.PaymentService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -23,11 +22,10 @@ import java.util.Map;
 
 /**
  * REST surface of the Enterprise Switch (architecture step 2).
- * CORS is open to the local React dev server only.
+ * CORS is configured centrally in {@link com.finguard.switchsvc.config.CorsConfig}.
  */
 @RestController
 @RequestMapping("/api/v1/upi")
-@CrossOrigin(origins = {"http://localhost:5173", "http://localhost:3000"})
 public class UpiPaymentController {
 
     private final PaymentService paymentService;

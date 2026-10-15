@@ -72,9 +72,11 @@ sw_bottom = box(47.0, TOP, 48.0, "SPRING BOOT SWITCH", "Port 8081",
                  "5   COMMIT   or   ROLLBACK + account lock"],
                 NAVY, LIGHT)
 
-box(108.0, TOP, 33.0, "FASTAPI AI CORE", "Port 8001",
-    ["Isolation Forest (.joblib)", "13-feature vector",
-     "Normalised score [0, 1]", "is_fraud = score ≥ 0.85"], TEAL)
+box(108.0, TOP, 33.0, "FASTAPI HYBRID CORE", "Port 8001",
+    ["Tier 1  rule engine", "Tier 2  Isolation Forest (200)",
+     "Tier 3  LOF (k=20, 40k refs)",
+     "fused = max(.20·IF + .80·LOF, rules)",
+     "is_fraud = score ≥ 0.802"], TEAL)
 
 LEDGER_TOP = sw_bottom - 8.0
 box(47.0, LEDGER_TOP, 48.0, "H2 IN-MEMORY LEDGER", "Spring Data JPA",
@@ -103,7 +105,7 @@ ax.text(W/2, 86.5, "RT-IIPF  —  INLINE INTERCEPTION DATA FLOW",
         ha="center", va="center", fontsize=13.5, fontweight="bold", color=NAVY)
 ax.text(W/2, 1.8,
         "Funds are held mid-transaction; the ledger commits only after the AI verdict returns"
-        "   ·   measured end-to-end latency 11–12 ms",
+        "   ·   measured end-to-end latency 22 ms (p99 29 ms)",
         ha="center", va="center", fontsize=8.8, style="italic", color=GREY)
 
 fig.savefig("architecture.png", dpi=200, bbox_inches="tight", facecolor="white")
