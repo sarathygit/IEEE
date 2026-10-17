@@ -16,6 +16,11 @@ env/
 # Java build output (rebuilt from source by Maven / the Dockerfile)
 **/target/
 
+# paper/build/ holds LaTeX SOURCE, not build output; the **/build/ rule
+# above is for front-end bundles and must not swallow it.
+!paper/build/
+!paper/build/**
+
 # OS & Environment
 .DS_Store
 .env
