@@ -84,34 +84,31 @@ factor, real-time switches, transactional rollback.
 %%  Content: 7 sections, 5 TikZ/PGFPlots figures, 3 tables, 3 display
 %%  equations, 10 references, ~4,340 words of prose.
 %%
-%%  Estimated 5.6-6.1 pages. This is a space model (column-inches for
-%%  floats, headings and equations plus a prose-density estimate), NOT
-%%  a compile -- no TeX engine was available on the authoring machine.
-%%  Measure the real count on the first build, then use the knobs below.
-%%
-%%  IF IT RUNS SHORT of 6.0 pages, add in this order (all have verified
-%%  source material in main.tex; none requires new measurement):
-%%   1. Re-insert the per-component inference latency table from
-%%      main.tex Table "tab:components" into Sec. VI-D. The prose there
-%%      already lists all five rows.                      adds ~0.11 pg
-%%   2. In Sec. VI-A, restore the per-archetype recall breakdown as a
-%%      short table (A 1.00 / B 0.01 / C 1.00 / D 0.97 against the
-%%      forest's 0.26 / 0.00 / 0.07 / 0.26).              adds ~0.09 pg
-%%   3. In Sec. IV, restore the full IEEE lock-ordering argument from
-%%      main.tex Sec. IV-C, including eq. "eq:lockorder". adds ~0.08 pg
-%%   4. Widen Fig. 2 and Fig. 3 to figure* (full width).  adds ~0.10 pg
-%%
-%%  IF IT RUNS OVER 6.0 pages, cut in this order; each is
-%%  self-contained and loses no result:
-%%   1. Delete Fig. 1 (fig:ingest) and the sentence referring to it in
-%%      Sec. III-A; the 13 -> 67 mapping stays in the prose. saves ~0.14 pg
-%%   2. In Sec. II, delete the final paragraph (prior-work confusion
+%%  FIRST COMPILE CAME OUT AT 7 PAGES, not the estimated 5.6-6.1. The
+%%  body ended at the foot of p.6 and the 10-entry bibliography spilled
+%%  about half a column onto p.7. The earlier estimate was a space
+%%  model, not a compile -- there is no TeX engine on the authoring
+%%  machine. Space has since been recovered as follows:
+%%    - Fig. 1 rebuilt as a single-row horizontal flow (was 3 stacked
+%%      rows), at \tiny.                                 saves ~0.30 col
+%%    - Fig. 4 height 4.5cm -> 4.0cm, Fig. 5 4.6cm -> 4.1cm.
+%%                                                       saves ~0.15 col
+%%  Expected to land at 6 pages. VERIFY ON THE NEXT BUILD; if the
+%%  bibliography still breaks onto p.7, apply these in order:
+%%   1. In Sec. II, delete the final paragraph (prior-work confusion
 %%      matrix); keep the \cite{kumar2026} in Sec. I.       saves ~0.10 pg
+%%   2. Fold Sec. VI-C's third finding (the INR 50 / INR 50,000
+%%      endpoints) into the preceding paragraph.            saves ~0.07 pg
 %%   3. In Sec. V-C (Reproducibility), delete the last sentence on the
 %%      scikit-learn version record.                        saves ~0.03 pg
-%%   4. Fold Sec. VI-C's third finding (the INR 50 / INR 50,000
-%%      endpoints) into the preceding paragraph.            saves ~0.07 pg
-%%  Do NOT cut: Tables I-II, Figs. 4-5, eqs. (1)-(3), or the C1-C3 list.
+%%   4. Last resort: delete Fig. 1 entirely and the sentence referring
+%%      to it in Sec. III-A; the 13 -> 67 mapping is fully carried by
+%%      the surrounding prose.                             saves ~0.10 pg
+%%  Do NOT cut: Tables I-III, Figs. 2-5, eqs. (1)-(3), or the C1-C3 list.
+%%
+%%  If it now comes out UNDER 6 pages, re-insert the per-component
+%%  inference latency table from main.tex ("tab:components") into
+%%  Sec. VI-D; the prose there already lists all five of its rows.
 %%---------------------------------------------------------------------
 %%=====================================================================
 \section{Introduction}
@@ -245,21 +242,23 @@ vector is complete before any money moves.
 
 \begin{figure}[t]
 \centering
-\begin{tikzpicture}[node distance=2.2mm and 3.4mm]
-\node[fbox, text width=0.29\columnwidth] (f1)
-  {\textbf{Payer form}\\ amount, type,\\ merchant category\\ \emph{(3 fields)}};
-\node[fbox, text width=0.29\columnwidth, right=of f1] (f2)
-  {\textbf{Client runtime}\\ device type,\\ network type\\ \emph{(2 fields)}};
-\node[fbox, text width=0.29\columnwidth, right=of f2] (f3)
-  {\textbf{Switch + clock}\\ banks, age groups,\\ state, hour, day\\ \emph{(8 fields)}};
-\node[shaded, below=5.5mm of f2, text width=0.80\columnwidth, align=center] (pre)
-  {\textbf{Preprocessor $\Phi$} \emph{(fitted once, seed 42)}\\[1pt]
-   3 numeric standardised $\;\cdot\;$ 10 categorical one-hot
-   $\rightarrow$ 64\\ unseen levels $\rightarrow$ all-zero block};
-\node[heavy, below=3.6mm of pre, text width=0.80\columnwidth, align=center] (vec)
-  {$\mathbf{x} \in \mathbb{R}^{67}$ \quad ($3$ dense $+$ $64$ binary,
-   exactly $10$ non-zero)};
-\foreach \s in {f1,f2,f3} \draw[flow] (\s) -- (pre);
+\begin{tikzpicture}[font=\tiny, node distance=1.0mm]
+\node[fbox, font=\tiny, text width=0.265\columnwidth] (s1)
+  {\textbf{Payer form} \emph{(3)}\\ amount, type, category};
+\node[fbox, font=\tiny, text width=0.265\columnwidth, below=of s1] (s2)
+  {\textbf{Client runtime} \emph{(2)}\\ device, network};
+\node[fbox, font=\tiny, text width=0.265\columnwidth, below=of s2] (s3)
+  {\textbf{Switch $+$ clock} \emph{(8)}\\ banks, ages, state, hour, day};
+\node[shaded, font=\tiny, text width=0.285\columnwidth, align=center,
+      right=2.6mm of s2] (pre)
+  {\textbf{Preprocessor $\Phi$}\\ \emph{fitted once, seed 42}\\
+   3 numeric standardised\\ 10 one-hot $\rightarrow$ 64\\
+   unseen $\rightarrow$ all-zero};
+\node[heavy, font=\tiny, text width=0.215\columnwidth, align=center,
+      right=2.6mm of pre] (vec)
+  {$\mathbf{x} \in \mathbb{R}^{67}$\\[1pt] 3 dense\\ $+$ 64 binary\\
+   \emph{10 non-zero}};
+\foreach \s in {s1,s2,s3} \draw[flow] (\s.east) -- (pre.west);
 \draw[flow] (pre) -- (vec);
 \end{tikzpicture}
 \caption{Ingestion and vectorisation. Thirteen raw components from
@@ -286,10 +285,10 @@ rows, an $80\%$ split of a $250{,}000$-row corpus under seed~$42$.
 \textbf{Tier 1, rules.} Four predicates evaluate directly on the raw
 fields. Their thresholds are quantiles of the training amount
 distribution rather than authored round numbers: the extreme threshold
-is the $99.9$th percentile, \INR{16{,}450}; the high threshold is the
-$99.0$th percentile, \INR{8{,}998}; and the small-ticket ceiling is the
-$99.5$th percentile, \INR{11{,}136}. The predicates are an extreme
-amount (weight $0.55$); a high amount in the small hours, before
+is the $99.9$th percentile, \INR{16{,}450.01}; the high threshold is
+the $99.0$th percentile, \INR{8{,}998.01}; and the small-ticket ceiling
+is the $99.5$th percentile, \INR{11{,}136.03}. The predicates are an extreme
+amount (weight $0.55$); a high amount in the small hours, at or before
 $05$:$00$ (weight $0.30$); a small-ticket category such as Grocery,
 Food, Transport or a Recharge exceeding the small-ticket ceiling
 (weight $0.35$); and a high amount originating from the Web channel
@@ -594,7 +593,7 @@ configuration is advantaged by operating at a different point.
 \centering
 \begin{tikzpicture}
 \begin{axis}[
-  width=1.02\columnwidth, height=4.5cm,
+  width=1.02\columnwidth, height=4.0cm,
   ybar, bar width=4.6pt,
   ymin=0, ymax=1.02,
   ylabel={metric value}, ylabel near ticks,
@@ -608,7 +607,9 @@ configuration is advantaged by operating at a different point.
                 /tikz/every even column/.append style={column sep=2pt}},
   ymajorgrids, grid style={dotted, black!35},
   enlarge x limits=0.16,
-  nodes near coords, every node near coord/.append style=
+  nodes near coords={\pgfmathprintnumber[fixed, fixed zerofill,
+    precision=3]{\pgfplotspointmeta}},
+  every node near coord/.append style=
     {font=\tiny, rotate=90, anchor=west, inner sep=1pt},
 ]
 \addplot[draw=black, fill=black!15] coordinates
@@ -703,7 +704,7 @@ FPR $0.0097$.\par}
 
 Table~\ref{tab:sweep} holds every feature constant --- a P2M Grocery
 payment from a Web client over 4G at $18$:$00$ on a weekday --- and
-varies only the amount. Reading it row by row exposes two properties
+varies only the amount. Reading it row by row exposes three properties
 that neither the aggregate metrics nor the architecture description
 reveals.
 
@@ -732,8 +733,10 @@ $50{,}000$      & $0.617$ & $1.000$ & $1.00$ & $1.000$ & \textbf{BLOCK} \\
 
 \vspace{2pt}
 {\footnotesize\raggedright
-$^{a}$high threshold, $^{b}$small-ticket ceiling,
-$^{c}$extreme threshold.\par}
+$^{a,b,c}$Sweep amounts are rounded to the rupee and so fall just
+\emph{below} $\theta_{\mathrm{high}}$, $\theta_{\mathrm{tick}}$ and
+$\theta_{\mathrm{ext}}$ respectively, none of which is a round number.
+The corresponding predicate therefore does not fire on that row.\par}
 \end{table}
 
 First, \emph{the learned score is not monotone in amount}. The density
@@ -750,12 +753,19 @@ precision.
 
 Second, \emph{the decision disjunction is not redundant}. At
 \INR{16{,}450} the system blocks with $S = 0.550$, well below
-$\tau = 0.802$. The verdict is produced entirely by the hard-flag
-branch of \eqref{eq:decide}: the extreme-amount predicate fires alone.
-Thresholding on the fused score alone would have admitted this
-transaction. The first transition in the table therefore occurs between
-\INR{11{,}136} and \INR{16{,}450}, at the rule boundary rather than at
-the learned boundary.
+$\tau = 0.802$, so thresholding on the fused score alone would have
+admitted this transaction. The verdict comes from the hard-flag branch
+of \eqref{eq:decide}, and specifically from its corroboration clause
+rather than from the extreme-amount predicate. Because the quantile
+thresholds are not round numbers --- $\theta_{\mathrm{ext}}$ is
+\INR{16{,}450.01} --- this row falls just under the extreme predicate,
+which does not fire. Two weaker predicates fire instead, the
+small-ticket category ceiling and the high-value Web channel, giving
+$R = 0.35 + 0.20 = 0.55$ and satisfying $H$ through the two-predicate
+clause. A rule tier that escalated only on a single dominant predicate
+would have admitted this payment as well. The first transition in the
+table therefore occurs between \INR{11{,}136} and \INR{16{,}450}, at
+the rule boundary rather than at the learned boundary.
 
 Third, the two endpoints are informative about what the model is
 \emph{not} doing. The \INR{50} and \INR{50{,}000} rows share an
@@ -791,7 +801,7 @@ trades for pre-commit interception.
 \centering
 \begin{tikzpicture}
 \begin{axis}[
-  width=1.02\columnwidth, height=4.6cm,
+  width=1.02\columnwidth, height=4.1cm,
   ybar, bar width=15pt,
   ymode=log, log origin=infty,
   ymin=8, ymax=60000,
@@ -903,7 +913,8 @@ than recall. It costs precision, $0.409$ falling to $0.380$, but
 remains valid beyond the training support, emits the reason codes an
 audit of a declined payment needs, and enforces the
 amount-monotonicity the learned tiers demonstrably lack --- binding at
-the \INR{16{,}450} point where the system blocks at $S = 0.550 < \tau$.
+the \INR{16{,}450} point where the system blocks at $S = 0.550 < \tau$
+on two corroborating predicates, neither individually decisive.
 The system is not lock-bound; the scorer is the constraint.
 
 Limitations bound these claims. The feature vector is

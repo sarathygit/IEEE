@@ -1175,8 +1175,12 @@ $50{,}000$      & $0.617$ & $1.000$ & $1.00$ & $1.000$ & \textbf{BLOCK} \\
 
 \vspace{2pt}
 {\footnotesize\raggedright
-Amounts in INR. $^{a}\theta_{\mathrm{high}}$,
-$^{b}\theta_{\mathrm{tick}}$, $^{c}\theta_{\mathrm{ext}}$.\par}
+Amounts in INR. Rows $^{a}$, $^{b}$ and $^{c}$ are rounded to the
+rupee and therefore fall just \emph{below}
+$\theta_{\mathrm{high}}$, $\theta_{\mathrm{tick}}$ and
+$\theta_{\mathrm{ext}}$ of \eqref{eq:th1}--\eqref{eq:th3}, none of
+which is a round number; the corresponding predicate does not fire on
+that row.\par}
 \end{table}
 
 \subsubsection{The learned score is not monotone in amount}
@@ -1192,10 +1196,17 @@ Column~$R$ is monotone by construction and supplies that guarantee.
 \subsubsection{The decision disjunction is not redundant}
 At \INR{16{,}450} the system blocks with $S = 0.550$, which is below
 $\tau = 0.802$. The verdict is produced entirely by the hard-rule
-branch of \eqref{eq:decide}, triggered by $r_{1}$ at
-$\theta_{\mathrm{ext}}$. This is the empirical demonstration that the
-two branches of \eqref{eq:decide} are independent: a configuration
-thresholding on $S$ alone would admit this transaction.
+branch of \eqref{eq:decide}, and specifically by its corroboration
+term rather than by $r_{1}$: the row is rounded to the rupee and so
+sits just under $\theta_{\mathrm{ext}} = \INR{16{,}450.01}$, leaving
+$r_{1}$ unfired. The predicates that do fire are $r_{3}$ and $r_{4}$,
+giving $R = 0.35 + 0.20 = 0.55$ and satisfying the
+$\sum_{i}\mathbb{1}[r_{i}] \geq 2$ term of \eqref{eq:hard}. This is
+the empirical demonstration that the two branches of
+\eqref{eq:decide} are independent, and it is stronger than a
+single-predicate trigger would be: a configuration thresholding on $S$
+alone would admit this transaction, and so would a rule tier that
+escalated only on one dominant predicate.
 
 \subsubsection{Selectivity}
 The \INR{50} and \INR{50{,}000} endpoints share an identical channel
@@ -1357,7 +1368,9 @@ that the learned tiers demonstrably lack: Table~\ref{tab:sweep} shows
 $S_{\mathrm{LOF}}$ \emph{falling} from $0.814$ to $0.519$ as the
 transfer grows from \INR{5{,}000} to \INR{11{,}136}. The
 \INR{16{,}450} row, blocked at $S = 0.550 < \tau$ by the hard-rule
-branch alone, is the operating point at which that guarantee binds.
+branch alone --- on two corroborating predicates, neither of them
+individually decisive --- is the operating point at which that
+guarantee binds.
 
 \textbf{The system is not lock-bound.} Contended and uncontended
 throughput are statistically indistinguishable across all
