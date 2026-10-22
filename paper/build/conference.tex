@@ -84,31 +84,36 @@ factor, real-time switches, transactional rollback.
 %%  Content: 7 sections, 5 TikZ/PGFPlots figures, 3 tables, 3 display
 %%  equations, 10 references, ~4,340 words of prose.
 %%
-%%  FIRST COMPILE CAME OUT AT 7 PAGES, not the estimated 5.6-6.1. The
-%%  body ended at the foot of p.6 and the 10-entry bibliography spilled
-%%  about half a column onto p.7. The earlier estimate was a space
-%%  model, not a compile -- there is no TeX engine on the authoring
-%%  machine. Space has since been recovered as follows:
-%%    - Fig. 1 rebuilt as a single-row horizontal flow (was 3 stacked
-%%      rows), at \tiny.                                 saves ~0.30 col
-%%    - Fig. 4 height 4.5cm -> 4.0cm, Fig. 5 4.6cm -> 4.1cm.
-%%                                                       saves ~0.15 col
-%%  Expected to land at 6 pages. VERIFY ON THE NEXT BUILD; if the
-%%  bibliography still breaks onto p.7, apply these in order:
-%%   1. In Sec. II, delete the final paragraph (prior-work confusion
-%%      matrix); keep the \cite{kumar2026} in Sec. I.       saves ~0.10 pg
-%%   2. Fold Sec. VI-C's third finding (the INR 50 / INR 50,000
-%%      endpoints) into the preceding paragraph.            saves ~0.07 pg
-%%   3. In Sec. V-C (Reproducibility), delete the last sentence on the
-%%      scikit-learn version record.                        saves ~0.03 pg
-%%   4. Last resort: delete Fig. 1 entirely and the sentence referring
-%%      to it in Sec. III-A; the 13 -> 67 mapping is fully carried by
-%%      the surrounding prose.                             saves ~0.10 pg
-%%  Do NOT cut: Tables I-III, Figs. 2-5, eqs. (1)-(3), or the C1-C3 list.
+%%  TARGET LENGTH: 7 PAGES.
 %%
-%%  If it now comes out UNDER 6 pages, re-insert the per-component
-%%  inference latency table from main.tex ("tab:components") into
-%%  Sec. VI-D; the prose there already lists all five of its rows.
+%%  The first compile came out at 7 pages: body through the foot of
+%%  p.6, with the 10-entry bibliography running about a third of the
+%%  way down p.7. That is the intended length, so the figures are kept
+%%  at full size and no prose has been cut to reach 6.
+%%
+%%  History, to stop anyone re-tightening this file by mistake: an
+%%  interim revision shrank Fig. 1 to a single \tiny row and trimmed
+%%  Figs. 4-5 by 0.5 cm each, chasing a 6-page target that no longer
+%%  applies. Both changes are reverted. Do not reapply them.
+%%
+%%  To use p.7 rather than leave it a third full, this revision adds
+%%  Table III (per-component inference latency, the evidence behind the
+%%  55.1% forest share that Secs. VI-B and VII both rely on).
+%%
+%%  IF A VENUE LATER IMPOSES A HARD 6-PAGE LIMIT, cut in this order;
+%%  each is self-contained and loses no result:
+%%   1. Delete Table III and restore the one-sentence inline component
+%%      breakdown it replaced.                              saves ~0.12 pg
+%%   2. In Sec. II, delete the final paragraph (prior-work confusion
+%%      matrix); keep the \cite{kumar2026} in Sec. I.        saves ~0.10 pg
+%%   3. Fold Sec. VI-C's third finding (the INR 50 / INR 50,000
+%%      endpoints) into the preceding paragraph.             saves ~0.07 pg
+%%   4. In Sec. V-C (Reproducibility), delete the last sentence on the
+%%      scikit-learn version record.                         saves ~0.03 pg
+%%   5. Last resort: delete Fig. 1 and the sentence referring to it in
+%%      Sec. III-A; the 13 -> 67 mapping is carried by the prose.
+%%                                                          saves ~0.14 pg
+%%  Do NOT cut: Tables I-II, Figs. 2-5, eqs. (1)-(3), or the C1-C3 list.
 %%---------------------------------------------------------------------
 %%=====================================================================
 \section{Introduction}
@@ -242,23 +247,21 @@ vector is complete before any money moves.
 
 \begin{figure}[t]
 \centering
-\begin{tikzpicture}[font=\tiny, node distance=1.0mm]
-\node[fbox, font=\tiny, text width=0.265\columnwidth] (s1)
-  {\textbf{Payer form} \emph{(3)}\\ amount, type, category};
-\node[fbox, font=\tiny, text width=0.265\columnwidth, below=of s1] (s2)
-  {\textbf{Client runtime} \emph{(2)}\\ device, network};
-\node[fbox, font=\tiny, text width=0.265\columnwidth, below=of s2] (s3)
-  {\textbf{Switch $+$ clock} \emph{(8)}\\ banks, ages, state, hour, day};
-\node[shaded, font=\tiny, text width=0.285\columnwidth, align=center,
-      right=2.6mm of s2] (pre)
-  {\textbf{Preprocessor $\Phi$}\\ \emph{fitted once, seed 42}\\
-   3 numeric standardised\\ 10 one-hot $\rightarrow$ 64\\
-   unseen $\rightarrow$ all-zero};
-\node[heavy, font=\tiny, text width=0.215\columnwidth, align=center,
-      right=2.6mm of pre] (vec)
-  {$\mathbf{x} \in \mathbb{R}^{67}$\\[1pt] 3 dense\\ $+$ 64 binary\\
-   \emph{10 non-zero}};
-\foreach \s in {s1,s2,s3} \draw[flow] (\s.east) -- (pre.west);
+\begin{tikzpicture}[node distance=2.2mm and 3.4mm]
+\node[fbox, text width=0.29\columnwidth] (f1)
+  {\textbf{Payer form}\\ amount, type,\\ merchant category\\ \emph{(3 fields)}};
+\node[fbox, text width=0.29\columnwidth, right=of f1] (f2)
+  {\textbf{Client runtime}\\ device type,\\ network type\\ \emph{(2 fields)}};
+\node[fbox, text width=0.29\columnwidth, right=of f2] (f3)
+  {\textbf{Switch + clock}\\ banks, age groups,\\ state, hour, day\\ \emph{(8 fields)}};
+\node[shaded, below=5.5mm of f2, text width=0.80\columnwidth, align=center] (pre)
+  {\textbf{Preprocessor $\Phi$} \emph{(fitted once, seed 42)}\\[1pt]
+   3 numeric standardised $\;\cdot\;$ 10 categorical one-hot
+   $\rightarrow$ 64\\ unseen levels $\rightarrow$ all-zero block};
+\node[heavy, below=3.6mm of pre, text width=0.80\columnwidth, align=center] (vec)
+  {$\mathbf{x} \in \mathbb{R}^{67}$ \quad ($3$ dense $+$ $64$ binary,
+   exactly $10$ non-zero)};
+\foreach \s in {f1,f2,f3} \draw[flow] (\s) -- (pre);
 \draw[flow] (pre) -- (vec);
 \end{tikzpicture}
 \caption{Ingestion and vectorisation. Thirteen raw components from
@@ -593,7 +596,7 @@ configuration is advantaged by operating at a different point.
 \centering
 \begin{tikzpicture}
 \begin{axis}[
-  width=1.02\columnwidth, height=4.0cm,
+  width=1.02\columnwidth, height=4.5cm,
   ybar, bar width=4.6pt,
   ymin=0, ymax=1.02,
   ylabel={metric value}, ylabel near ticks,
@@ -779,14 +782,36 @@ coarser rule set would do and which would be unusable in production.
 \subsection{Latency, Scaling and Lock Contention}
 \label{subsec:latency}
 
-On the laboratory host over $n=300$ warm iterations, inference totals
-$17.33$\,ms, decomposing as Isolation Forest $9.55$\,ms ($55.1\%$),
-preprocessor $3.80$\,ms ($21.9\%$), LOF $3.18$\,ms ($18.3\%$), frame
-construction $0.61$\,ms, and the rule engine $0.19$\,ms. The forest
-takes the largest single share while contributing no detection;
-removing it would reduce inference to approximately $7.8$\,ms at
-unchanged recall. We report the deployed configuration as measured and
-identify this as the primary available optimisation.
+Table~\ref{tab:components} decomposes inference on the laboratory host
+over $n=300$ warm iterations. The ordering is the result that matters:
+the forest consumes the largest single share, $55.1\%$, while
+contributing no detection at all by
+Section~\ref{subsec:ablation}. Removing it would reduce inference to
+approximately $7.8$\,ms at unchanged recall. We report the deployed
+configuration as measured and identify this as the primary available
+optimisation.
+
+\begin{table}[t]
+\centering
+\caption{Per-component inference latency, laboratory host, $n=300$.}
+\label{tab:components}
+\renewcommand{\arraystretch}{1.12}
+\footnotesize
+\setlength{\tabcolsep}{5pt}
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+\textbf{Component} & \textbf{Mean (ms)} & \textbf{p50} & \textbf{p95} & \textbf{Share} \\
+\midrule
+Isolation Forest (Tier 2) & $9.549$ & $9.513$ & $9.758$ & $55.1\%$ \\
+Preprocessor $\Phi$       & $3.799$ & $3.600$ & $4.052$ & $21.9\%$ \\
+LOF (Tier 3)              & $3.178$ & $3.128$ & $3.515$ & $18.3\%$ \\
+Frame construction        & $0.610$ & $0.589$ & $0.721$ & $3.5\%$ \\
+Rule engine (Tier 1)      & $0.193$ & $0.183$ & $0.254$ & $1.1\%$ \\
+\midrule
+\textbf{Total}            & $\mathbf{17.330}$ & & & $100\%$ \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 At concurrency~$1$, where no queuing occurs, the switch completes a
 payment in mean $22.4$\,ms (p95~$23.8$, p99~$25.3$), attributing
@@ -801,7 +826,7 @@ trades for pre-commit interception.
 \centering
 \begin{tikzpicture}
 \begin{axis}[
-  width=1.02\columnwidth, height=4.1cm,
+  width=1.02\columnwidth, height=4.6cm,
   ybar, bar width=15pt,
   ymode=log, log origin=infty,
   ymin=8, ymax=60000,
