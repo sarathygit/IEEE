@@ -554,10 +554,11 @@ $\eta$, $\tau_{\mathrm{t}}$, $m$, and $v$ abbreviate the amount, hour,
 transaction type, merchant category, and device type of $\mathbf{x}$,
 and define the small-ticket predicate
 \begin{equation}
-\Sigma(\mathbf{x}) =
-\left[\tau_{\mathrm{t}} = \texttt{Recharge}\right]
-\vee
-\left[m \in \{\texttt{Grocery},\texttt{Food},\texttt{Transport}\}\right].
+\begin{split}
+\Sigma(\mathbf{x}) =\;&
+\left[\tau_{\mathrm{t}} = \texttt{Recharge}\right] \;\vee\\
+&\left[m \in \{\texttt{Grocery},\texttt{Food},\texttt{Transport}\}\right].
+\end{split}
 \label{eq:smallticket}
 \end{equation}
 Table~\ref{tab:rules} states the four predicates and their weights.
@@ -780,7 +781,7 @@ Table~\ref{tab:states} maps each to its verdict condition, HTTP status,
 and effect on the two balance rows. The mapping is total: every request
 terminates in exactly one row.
 
-\begin{table}[t]
+\begin{table*}[t]
 \centering
 \caption{Terminal states and ledger effects. $\hat{y}$ is the verdict
 of \eqref{eq:decide}.}
@@ -791,13 +792,13 @@ of \eqref{eq:decide}.}
 \toprule
 \textbf{State} & \textbf{Condition} & \textbf{HTTP} & \textbf{Ledger effect} \\
 \midrule
-\texttt{SUCCESS}        & $\hat{y}=0$             & $200$ & debit/credit committed \\
-\texttt{BLOCKED\_FRAUD} & $\hat{y}=1$             & $403$ & rolled back; payer locked \\
-\texttt{FAILED}         & pre-verdict rejection   & $4xx$ & no rows written \\
-\texttt{FAILED}         & scorer unreachable      & $503$ & rolled back \\
+\texttt{SUCCESS}        & $\hat{y}=0$           & $200$ & debit and credit committed \\
+\texttt{BLOCKED\_FRAUD} & $\hat{y}=1$           & $403$ & rolled back, payer locked \\
+\texttt{FAILED}         & pre-verdict rejection & $4xx$ & no rows written \\
+\texttt{FAILED}         & scorer unreachable    & $503$ & rolled back \\
 \bottomrule
 \end{tabular}
-\end{table}
+\end{table*}
 
 The implemented policy is binary. A graduated response---holding a
 suspicious transaction for out-of-band re-authentication rather than

@@ -457,10 +457,10 @@ unavailability.
 \centering
 \begin{tikzpicture}[
   node distance=2.0mm,
-  step/.style={fbox, text width=0.78\columnwidth},
-  lockd/.style={step, fill=black!6},
+  lcrow/.style={fbox, text width=0.78\columnwidth},
+  lockd/.style={lcrow, fill=black!6},
 ]
-\node[step]  (n1) {\textbf{1}~Validate request, resolve payer, check
+\node[lcrow] (n1) {\textbf{1}~Validate request, resolve payer, check
   account lock flag, verify MPIN};
 \node[lockd, below=of n1] (n2) {\textbf{2}~\textsc{begin} $T_{f}$:
   lock both rows \texttt{FOR UPDATE}, ascending id};
@@ -474,7 +474,7 @@ unavailability.
   (\texttt{REQUIRES\_NEW}, separate connection)\\
   $\rightarrow$ set lock flag $+$ insert audit row $\rightarrow$
   \textsc{commit} $T_{s}$ at $t_{1}$};
-\node[step, below=of n5] (n6) {\textbf{6}~$\hat{y}{=}1$:
+\node[lcrow, below=of n5] (n6) {\textbf{6}~$\hat{y}{=}1$:
   \textsc{rollback} $T_{f}$ at $t_{2} > t_{1}$, HTTP 403
   ~\textbar~ $\hat{y}{=}0$: \textsc{commit} $T_{f}$, HTTP 200};
 \foreach \a/\b in {n1/n2, n2/n3, n3/n4, n4/n5, n5/n6}
