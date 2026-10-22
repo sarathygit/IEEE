@@ -128,25 +128,31 @@ measured in milliseconds. Most deployed controls do not operate inside
 it: they score after settlement, which converts a detection problem
 into a recovery problem.
 
-An inline control consumes part of the switch's processing window and,
-because it executes while ledger rows are held under write locks, also
-extends the period those accounts are unavailable. Its cost is
-therefore twofold: response latency and lock occupancy. We adopt a
-$500$\,ms round-trip budget as the design target and report measured
-latency against it.\footnote{This is the present work's engineering
+An inline control spends part of the switch's processing window, and
+because it runs while both ledger rows sit under
+\texttt{PESSIMISTIC\_WRITE} locks, it also extends the interval in
+which those two accounts are unavailable to every other payment. The
+cost is twofold: response latency and lock occupancy. We adopt a
+$500$\,ms round-trip budget as the design
+target.\footnote{This is the present work's engineering
 budget; a citation to the governing network specification should
-replace this note before submission.}
+replace this note before submission.} The implementation reported here
+spends $17.3$\,ms of inference inside a $22.4$\,ms path, and that
+sub-$20$\,ms inference figure, not the $500$\,ms envelope, is the
+constraint that excludes most published detectors.
 
 Batch pipelines impose no latency on the authorisation path but act on
-funds already moved. Deep sequential~\cite{jurgovsky2018} and
-graph~\cite{dou2020} models capture behavioural context, but their
-inference cost and their need to assemble a history or a neighbourhood
-at scoring time place them outside a millisecond window held under a
-lock. Both are also supervised, requiring labels that are scarce
-precisely when a pattern is novel. The gap is a detector cheap enough
-to run inside the lock window, needing no labels, and producing a
-decision the transaction manager can act on before commit. This paper
-contributes:
+funds already moved. Sequential~\cite{jurgovsky2018} and
+graph~\cite{dou2020} detectors read behavioural and relational context
+that a single transaction record cannot carry, and in this setting they
+pay for it twice: once in inference, and again in the database work
+needed to assemble that history or neighbourhood while the payer's row
+is already locked. Both are supervised, so they want labels that are
+scarce precisely when a pattern is novel. What the authorisation path
+needs instead is a detector that scores one record in isolation,
+cheaply enough to fit inside the lock window, with no labels, no second
+query, and a verdict the transaction manager can act on before commit.
+This paper contributes:
 
 \textbf{C1.} An inline hybrid pipeline combining a deterministic rule
 tier with an Isolation Forest and a Local Outlier Factor estimator,
@@ -176,46 +182,53 @@ architectural rather than statistical reasons: threshold conjunctions
 evaluate in constant time, hold no model state, emit a reason code, and
 fail reconstructibly. Surveys record them as the component that
 executes on the authorisation path, with learned models placed
-downstream~\cite{abdallah2016}. Their limits are equally established: a
-fixed predicate set encodes only the attacks known at authoring time,
-absolute thresholds drift as the amount distribution shifts, and a
-conjunction over individual attributes cannot express an anomaly
-distributed \emph{across} attributes. We retain a rule tier but narrow
-its role. Its thresholds are training quantiles rather than authored
-constants, and it acts as a lower bound on risk rather than as the
-primary classifier.
+downstream~\cite{abdallah2016}. The limits are equally well known, and
+each one shaped a decision here. A fixed predicate set encodes only the
+attacks known when it was written, so we do not ask this tier to
+classify. Absolute thresholds drift as the amount distribution moves,
+so ours are training quantiles: $\theta_{\mathrm{ext}}$ is
+\INR{16{,}450.01}, not a round \INR{16{,}000} chosen by hand. And a
+conjunction over individual attributes cannot express an anomaly spread
+\emph{across} attributes, so the tier supplies a lower bound on risk
+and leaves that case to the density estimator.
 
 \textbf{Supervised and deep models.} Gradient-boosted trees are the
 standard tabular baseline~\cite{chen2016}; sequential~\cite{jurgovsky2018}
 and graph~\cite{dou2020} architectures add behavioural and relational
-context~\cite{adewumi2017}. Three properties bear jointly on inline
-use. All need confirmed labels, which are produced over days to weeks,
-so the label set is empty exactly when a novel pattern must be caught.
-All need a retraining loop whose integrity depends on annotation
-quality, a fragility our corpus exhibits: its \texttt{fraud\_flag}
-column yields ROC-AUC $\approx 0.48$ against every detector we
-evaluated. And the sequential and graph variants must assemble a
-history or a neighbourhood at scoring time, adding database work to a
-window the detector already extends. The unsupervised per-transaction
-formulation used here avoids all three, at the cost of detecting
-\emph{atypicality} rather than \emph{fraud}, and of blindness to
-velocity attacks, which we quantify with a negative control.
+context~\cite{adewumi2017}. Three properties of this family bear on
+inline use, and they compound. Labels come first: a confirmed fraud
+label takes days to weeks to produce, so the label set is empty exactly
+when a novel pattern must be caught. Label \emph{quality} is the
+second, and our corpus shows how badly it can fail --- the shipped
+\texttt{fraud\_flag} column yields ROC-AUC $\approx 0.48$ against every
+detector we evaluated, which is to say it carries no signal at all, and
+any retraining loop built on it would optimise noise. The third applies
+only to the sequential and graph variants, which must assemble a
+history or a neighbourhood at scoring time and so add database work to
+the very window they extend. The unsupervised per-transaction
+formulation used here sidesteps all three. It pays for that in two
+ways: it detects \emph{atypicality} rather than \emph{fraud}, and it is
+blind to velocity attacks by construction, which we quantify with a
+negative control rather than leave implicit.
 
 \textbf{Unsupervised ensembles.} Isolation Forest~\cite{liu2008} scores
-by expected path length under random axis-parallel partitioning, at a
-cost independent of training-set size. Its power degrades where
-anomalies are local rather than globally extreme and, as
-Section~\ref{sec:evaluation} measures, where the representation is
-dominated by sparse one-hot indicators. Local Outlier
-Factor~\cite{breunig2000} covers that case through local density
-contrast, but with the inverse cost structure: under brute-force
-search its query cost grows with the reference-set size, so over our
-$200{,}000$-row training partition the query term alone would dominate
-the lock window. One-class SVMs~\cite{scholkopf2001} pose a comparable
-obstacle. With no uniformly dominant method~\cite{campos2016},
-combination is preferable to selection. We bound the density term by
-fixing a $40{,}000$-point reference set, sampled once and held
-resident in memory.
+by expected path length under random axis-parallel splits, and its cost
+does not grow with the training set --- the property that put it in
+this pipeline to begin with. It weakens where anomalies are local
+rather than globally extreme, and, as
+Section~\ref{sec:evaluation} measures on our own $67$-dimensional
+encoding, where $64$ of those coordinates are one-hot indicators with
+only $10$ set in any record. Local Outlier
+Factor~\cite{breunig2000} covers exactly that case through local
+density contrast, and inverts the cost structure: each query scales
+with the reference set, so scoring against the full $200{,}000$-row
+training partition would have exhausted the lock window on its own.
+One-class SVMs~\cite{scholkopf2001} run into the same wall. With no
+method uniformly dominant~\cite{campos2016}, we combined rather than
+chose, and capped the density term at a $40{,}000$-point reference set
+drawn once and held resident --- $184$\,MB of the scoring process,
+which is what fixes the worker count in
+Section~\ref{sec:implementation}.
 
 The closest prior work scores UPI records drawn from the same public
 source~\cite{kumar2026}, but issues a step-up challenge \emph{after}
@@ -653,19 +666,22 @@ and F1, and their per-archetype recalls coincide exactly --- A~$1.00$,
 B~$0.01$, C~$1.00$, D~$0.97$ --- against the forest's own $0.26$,
 $0.00$, $0.07$ and $0.26$. Adding the forest at weight $0.20$ changes
 no verdict while \emph{reducing} fused AUC from $0.8959$ to $0.8812$.
-On one-hot-dominated payment features, a partition-based detector fused
-with a density-based one supplies no incremental detection, and
-Section~\ref{subsec:latency} shows it does so at the largest single
-share of inference cost.
+The reading is unambiguous: on one-hot-dominated payment features a
+partition-based detector adds nothing to a density-based one, and
+Section~\ref{subsec:latency} shows it adds that nothing at
+$55.1\%$ of inference cost. The $0.20$ weight is not a small
+contribution; it is no contribution.
 
 \emph{Escalation costs precision without adding recall.} The deployed
 configuration holds recall at $0.745$ while precision falls to $0.380$
-and the false discovery rate rises to $0.620$. We retain the rule tier
-on grounds this evaluation set cannot measure --- validity beyond the
-training support, reason-code emission for the declined-payment
-audit, and operation in degraded mode --- together with the
-amount-monotonicity guarantee demonstrated in
-Section~\ref{subsec:sweep}.
+and the false discovery rate rises to $0.620$. Escalation buys no
+recall whatsoever and costs $0.029$ of precision, and we keep it
+anyway. The reasons are real but lie outside what this evaluation set
+can score: the tier stays valid beyond the training support, where both
+calibrations clip at unity and stop discriminating; it emits the reason
+code a declined payment has to be defended with; and it enforces the
+amount-monotonicity that Section~\ref{subsec:sweep} shows the learned
+tiers do not have. We state the price rather than bury it.
 
 Archetype~B returns recall $0.01$, within noise of the expected zero,
 which supports the injection procedure. Excluding~B, the detectable
@@ -786,10 +802,10 @@ Table~\ref{tab:components} decomposes inference on the laboratory host
 over $n=300$ warm iterations. The ordering is the result that matters:
 the forest consumes the largest single share, $55.1\%$, while
 contributing no detection at all by
-Section~\ref{subsec:ablation}. Removing it would reduce inference to
-approximately $7.8$\,ms at unchanged recall. We report the deployed
-configuration as measured and identify this as the primary available
-optimisation.
+Section~\ref{subsec:ablation}. Dropping it would cut inference to about
+$7.8$\,ms and change no verdict. We report the configuration we
+actually deployed and measured, rather than the faster one we would
+build next, and this is the single change we would make first.
 
 \begin{table}[t]
 \centering
